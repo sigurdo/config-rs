@@ -1,3 +1,4 @@
+use std::array;
 use std::str::FromStr;
 
 use crate::error::{ConfigError, Result};
@@ -177,7 +178,13 @@ impl Expression {
         }
     }
 
-    pub fn set(&self, root: &mut Value, value: Value) {
+    /// Set with provided array merge strategy
+    pub fn set_with_merge_strategy(
+        &self,
+        root: &mut Value,
+        value: Value,
+        array_merge_strategy: MergeStrategy,
+    ) {
         match *self {
             Self::Identifier(ref id) => {
                 // Ensure that root is a table
@@ -205,6 +212,41 @@ impl Expression {
                         }
                     }
 
+                    ValueKind::Array(ref incoming_array) => {
+                        // Get current value or create empty array
+                        let target = if let ValueKind::Table(ref mut map) = root.kind {
+                            map.entry(id.to_lowercase())
+                                .or_insert_with(|| Vec::<Value>::new().into())
+                        } else {
+                            unreachable!();
+                        };
+
+                        if let ValueKind::Array(ref mut target_array) = target.kind {
+                            match array_merge_strategy {
+                                MergeStrategy::Replace => {
+                                    // Replace current array
+                                    *target_array = incoming_array.clone();
+                                }
+                                MergeStrategy::Append => {
+                                    // Append each item to current array
+                                    for val in incoming_array {
+                                        target_array.push(val.clone());
+                                    }
+                                }
+                                MergeStrategy::AppendUnique => {
+                                    // Append each unique item to current array
+                                    for val in incoming_array {
+                                        if !target_array.contains(val) {
+                                            target_array.push(val.clone());
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            // Replace current (non-array) value
+                            *target = value;
+                        }
+                    }
                     _ => {
                         if let ValueKind::Table(ref mut map) = root.kind {
                             // Just do a simple set
@@ -246,4 +288,17 @@ impl Expression {
             }
         }
     }
+
+    /// Set with default merge strategy
+    pub fn set(&self, root: &mut Value, value: Value) {
+        self.set_with_merge_strategy(root, value, MergeStrategy::default())
+    }
+}
+
+#[derive(Default, Debug, PartialEq, Clone)]
+pub enum MergeStrategy {
+    Replace,
+    #[default]
+    Append,
+    AppendUnique,
 }
