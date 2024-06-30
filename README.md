@@ -18,7 +18,7 @@
 
 [JSON]: https://github.com/serde-rs/json
 [TOML]: https://github.com/toml-lang/toml
-[YAML]: https://github.com/chyh1990/yaml-rust
+[YAML]: https://github.com/Ethiraric/yaml-rust2
 [INI]: https://github.com/zonyitoo/rust-ini
 [RON]: https://github.com/ron-rs/ron
 [JSON5]: https://github.com/callum-oakley/json5-rs
@@ -32,7 +32,7 @@ Please note this library
 
 ```toml
 [dependencies]
-config = "0.13.1"
+config = "0.14.0"
 ```
 
 ### Feature flags
@@ -58,7 +58,7 @@ more usage information.
 
 ## MSRV
 
-We currently support Rust 1.70.0 and newer.
+We currently support Rust 1.75.0 and newer.
 
 
 ## License
