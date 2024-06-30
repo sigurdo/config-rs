@@ -151,8 +151,6 @@ impl Config {
     }
 
     fn get_value(&self, key: &str) -> Result<Value> {
-        let k = key.to_lowercase();
-        let key = k.as_str();
         // Parse the key into a path expression
         let expr: path::Expression = key.parse()?;
 
